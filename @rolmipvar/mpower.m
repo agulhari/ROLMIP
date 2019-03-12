@@ -10,7 +10,7 @@ elseif (n < 0)
   error('Exponent must be a positive integer.');
 else
   Z = 1;
-  for i = 2:n
+  for i = 1:n
     Z = mtimes(X, Z);
   end
 end
