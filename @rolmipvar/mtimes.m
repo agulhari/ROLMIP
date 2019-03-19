@@ -14,30 +14,30 @@ function Z = mtimes(X, Y)
             Z.data(i).value = X.data(i).value * Y;
             if (isscalar(Y))
                 if (isa(Y,'sdpvar'))
-                    Z.opcode{i} = strcat(X.opcode{i}, '*', '<>');
+                    Z.opcode{i} = [X.opcode{i}, '*', '<>'];
                 else
                     if (isreal(Y))
-                        Z.opcode{i} = strcat(X.opcode{i}, '*', num2str(Y), '#K1');
+                        Z.opcode{i} = [X.opcode{i}, '*', num2str(Y), '#K1'];
                     else %Imaginary
-                        Z.opcode{i} = strcat(X.opcode{i}, '*(', num2str(Y),')', '#K1');
+                        Z.opcode{i} = [X.opcode{i}, '*(', num2str(Y),')', '#K1'];
                     end
                 end
             else
-                Z.opcode{i} = strcat(X.opcode{i}, '*', '<>');
+                Z.opcode{i} = [X.opcode{i}, '*', '<>'];
             end
           end
           if (isscalar(Y))
               if (isa(Y,'sdpvar'))
-                  Z.label = strcat(X.label, '*', '<>');
+                  Z.label = [X.label, '*', '<>'];
               else
                   if (isreal(Y))
-                      Z.label = strcat(X.label, '*', num2str(Y));
+                      Z.label = [X.label, '*', num2str(Y)];
                   else %Imaginary
-                      Z.label = strcat(X.label, '*(', num2str(Y),')');
+                      Z.label = [X.label, '*(', num2str(Y),')'];
                   end
               end
           else
-              Z.label = strcat(X.label, '*', '<>');
+              Z.label = [X.label, '*', '<>'];
           end
       end
   elseif(isa(Y, 'rolmipvar'))
@@ -46,30 +46,30 @@ function Z = mtimes(X, Y)
         Z.data(i).value = X * Y.data(i).value;
         if (isscalar(X))
             if (isa(X,'sdpvar'))
-                Z.opcode{i} = strcat('<>', '*', Y.opcode{i});
+                Z.opcode{i} = ['<>', '*', Y.opcode{i}];
             else
                 if (isreal(X))
-                    Z.opcode{i} = strcat(num2str(X), '#K1', '*', Y.opcode{i});
+                    Z.opcode{i} = [num2str(X), '#K1', '*', Y.opcode{i}];
                 else %Imaginary
-                    Z.opcode{i} = strcat('(',num2str(X), ')#K1*', Y.opcode{i});
+                    Z.opcode{i} = ['(',num2str(X), ')#K1*', Y.opcode{i}];
                 end
             end
         else
-            Z.opcode{i} = strcat('<>', '*', Y.opcode{i});
+            Z.opcode{i} = ['<>', '*', Y.opcode{i}];
         end
       end
       if (isscalar(X))
           if (isa(X,'sdpvar'))
-              Z.label = strcat('<>','*', Y.label);
+              Z.label = ['<>','*', Y.label];
           else
               if (isreal(X))
-                  Z.label = strcat(num2str(X),'*', Y.label);
+                  Z.label = [num2str(X),'*', Y.label];
               else %Imaginary
-                  Z.label = strcat('(',num2str(X),')*', Y.label);
+                  Z.label = ['(',num2str(X),')*', Y.label];
               end
           end
       else
-          Z.label = strcat('<>','*', Y.label);
+          Z.label = ['<>','*', Y.label];
       end
   else
       % Why are you here?

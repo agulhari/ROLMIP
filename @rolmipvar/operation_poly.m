@@ -93,7 +93,7 @@ end
 
 contexp = ones(1,length(vertices)+1);
 for conttotal=1:numelem
-    vetexponent = [];
+    %vetexponent = [];
     for contsimplex=1:length(tabexponents)
         polyexponent{contsimplex} = tabexponents{contsimplex}(contexp(contsimplex),:);
 %         if (sum(polyexponent{contsimplex}) > 0)
@@ -122,9 +122,9 @@ if ((strcmp(poly1.label,'1') || strcmp(poly1.label,'-1')) && (strcmp(op,'*')))
     if (strcmp(poly1.label,'1'))
         resul.label = poly2.label;
     else %-1
-        resul.label = strcat('-',poly2.label);
+        resul.label = ['-', poly2.label];
         for cont=1:length(poly2.opcode)
-            poly2.opcode{cont} = strcat('-',strcat('(',strcat(poly2.opcode{cont},')')));
+            poly2.opcode{cont} = ['-', '(', poly2.opcode{cont}, ')'];
         end
     end
     value1 = 1;
@@ -132,15 +132,15 @@ elseif ((strcmp(poly2.label,'1') || strcmp(poly2.label,'-1')) && (strcmp(op,'*')
     if (strcmp(poly2.label,'1'))
         resul.label = poly1.label;
     else
-        resul.label = strcat('-',poly1.label);
+        resul.label = ['-', poly1.label];
         for cont=1:length(poly1.opcode)
-            poly1.opcode{cont} = strcat('-',strcat('(',strcat(poly1.opcode{cont},')')));
+            poly1.opcode{cont} = ['-', '(',  poly1.opcode{cont}, ')'];
         end
     end
     value1 = 2;
 else
-    resul.label = strcat(poly1.label,op);
-    resul.label = strcat(resul.label,poly2.label);
+    resul.label = [poly1.label, op];
+    resul.label = [resul.label, poly2.label];
 end
 
 if (op == '*')
@@ -155,15 +155,15 @@ if (op == '*')
             resul.data(indresul).value = resul.data(indresul).value + (poly1.data(1).value*poly2.data(cont2).value);
             if (value1 == 1)
                 if (~isempty(resul.opcode{indresul}))
-                    resul.opcode{indresul} = strcat(resul.opcode{indresul},linkop); 
-                    resul.opcode{indresul} = strcat(resul.opcode{indresul},poly2.opcode{cont2});
+                    resul.opcode{indresul} = [resul.opcode{indresul}, linkop]; 
+                    resul.opcode{indresul} = [resul.opcode{indresul}, poly2.opcode{cont2}];
                 else
                     resul.opcode{indresul} = poly2.opcode{cont2};
                 end
             elseif (value1 == 2)
                 if (~isempty(resul.opcode{indresul}))
-                    resul.opcode{indresul} = strcat(resul.opcode{indresul},linkop);
-                    resul.opcode{indresul} = strcat(resul.opcode{indresul},poly1.opcode{1});
+                    resul.opcode{indresul} = [resul.opcode{indresul}, linkop];
+                    resul.opcode{indresul} = [resul.opcode{indresul}, poly1.opcode{1}];
                 else
                     resul.opcode{indresul} = poly1.opcode{1};
                 end
@@ -204,7 +204,8 @@ if (op == '*')
                     contop2 = contop2 + 1;
                 end
                 
-                resul.opcode{indresul} = strcat(resul.opcode{indresul},strcat(linkop,strcat(openpar1,strcat(poly1.opcode{1},strcat(closepar1,strcat('*',strcat(openpar2,strcat(poly2.opcode{cont2},closepar2))))))));
+                %resul.opcode{indresul} = strcat(resul.opcode{indresul},strcat(linkop,strcat(openpar1,strcat(poly1.opcode{1},strcat(closepar1,strcat('*',strcat(openpar2,strcat(poly2.opcode{cont2},closepar2))))))));
+				resul.opcode{indresul} = [resul.opcode{indresul}, linkop, openpar1, poly1.opcode{1}, closepar1, '*', openpar2, poly2.opcode{cont2}, closepar2];
             end
         end
     elseif (length(poly2.data) == 1) %Poly2 is a constant
@@ -217,15 +218,15 @@ if (op == '*')
             resul.data(indresul).value = resul.data(indresul).value + (poly1.data(cont1).value*poly2.data(1).value);
             if (value1 == 1)
                 if (~isempty(resul.opcode{indresul}))
-                    resul.opcode{indresul} = strcat(resul.opcode{indresul},linkop);
-                    resul.opcode{indresul} = strcat(resul.opcode{indresul},poly2.opcode{1});
+                    resul.opcode{indresul} = [resul.opcode{indresul}, linkop];
+                    resul.opcode{indresul} = [resul.opcode{indresul}, poly2.opcode{1}];
                 else
                     resul.opcode{indresul} = poly2.opcode{1};
                 end
             elseif (value1 == 2)
                 if (~isempty(resul.opcode{indresul}))
-                    resul.opcode{indresul} = strcat(resul.opcode{indresul},linkop);
-                    resul.opcode{indresul} = strcat(resul.opcode{indresul},poly1.opcode{cont1});
+                    resul.opcode{indresul} = [resul.opcode{indresul}, linkop];
+                    resul.opcode{indresul} = [resul.opcode{indresul}, poly1.opcode{cont1}];
                 else
                     resul.opcode{indresul} = poly1.opcode{cont1};
                 end
@@ -264,9 +265,10 @@ if (op == '*')
                         closepar2 = ')';
                     end
                     contop2 = contop2 + 1;
-                end
+				end
 
-                resul.opcode{indresul} = strcat(resul.opcode{indresul},strcat(linkop,strcat(openpar1,strcat(poly1.opcode{cont1},strcat(closepar1,strcat('*',strcat(openpar2,strcat(poly2.opcode{1},closepar2))))))));
+				%resul.opcode{indresul} = strcat(resul.opcode{indresul},strcat(linkop,strcat(openpar1,strcat(poly1.opcode{cont1},strcat(closepar1,strcat('*',strcat(openpar2,strcat(poly2.opcode{1},closepar2))))))));
+                resul.opcode{indresul} = [resul.opcode{indresul}, linkop, openpar1, poly1.opcode{cont1}, closepar1, '*', openpar2, poly2.opcode{1}, closepar2];
             end
         end
     else %Both are polynomials
@@ -288,15 +290,15 @@ if (op == '*')
                 resul.data(indresul).value = resul.data(indresul).value + (poly1.data(cont1).value*poly2.data(cont2).value);
                 if (value1 == 1)
                     if (~isempty(resul.opcode{indresul}))
-                        resul.opcode{indresul} = strcat(resul.opcode{indresul},linkop);
-                        resul.opcode{indresul} = strcat(resul.opcode{indresul},poly2.opcode{cont2});
+                        resul.opcode{indresul} = [resul.opcode{indresul}, linkop];
+                        resul.opcode{indresul} = [resul.opcode{indresul}, poly2.opcode{cont2}];
                     else
                         resul.opcode{indresul} = poly2.opcode{cont2};
                     end
                 elseif (value1 == 2)
                     if (~isempty(resul.opcode{indresul}))
-                        resul.opcode{indresul} = strcat(resul.opcode{indresul},linkop);
-                        resul.opcode{indresul} = strcat(resul.opcode{indresul},poly1.opcode{cont1});
+                        resul.opcode{indresul} = [resul.opcode{indresul}, linkop];
+                        resul.opcode{indresul} = [resul.opcode{indresul}, poly1.opcode{cont1}];
                     else
                         resul.opcode{indresul} = poly1.opcode{cont1};
                     end
@@ -336,8 +338,10 @@ if (op == '*')
                         end
                         contop2 = contop2 + 1;
                     end
-                    
-                    resul.opcode{indresul} = strcat(resul.opcode{indresul},strcat(linkop,strcat(openpar1,strcat(poly1.opcode{cont1},strcat(closepar1,strcat('*',strcat(openpar2,strcat(poly2.opcode{cont2},closepar2))))))));
+                    %catopcode = {resul.opcode{indresul}, linkop, openpar1, poly1.opcode{cont1}, closepar1, '*', openpar2, poly2.opcode{cont2}, closepar2};
+                    %resul.opcode{indresul} = strcat(resul.opcode{indresul},strcat(linkop,strcat(openpar1,strcat(poly1.opcode{cont1},strcat(closepar1,strcat('*',strcat(openpar2,strcat(poly2.opcode{cont2},closepar2))))))));
+					%resul.opcode{indresul} = strcat(catopcode{:});
+					resul.opcode{indresul} = [resul.opcode{indresul}, linkop, openpar1, poly1.opcode{cont1}, closepar1, '*', openpar2, poly2.opcode{cont2}, closepar2];
                     %resul.opcode{indresul} = strcat(resul.opcode{indresul},strcat(linkop,strcat(poly1.opcode{cont1},strcat('*',poly2.opcode{cont2}))));
                 end
             end
@@ -356,10 +360,10 @@ if ((op == '+') || (op == '-'))
         
         if (op == '+')
             resul.data(indresul).value = resul.data(indresul).value + poly2.data(indresul).value;
-            resul.opcode{indresul} = strcat(strcat(poly1.opcode{cont},'+'),poly2.opcode{cont});
+            resul.opcode{indresul} = [poly1.opcode{cont}, '+', poly2.opcode{cont}];
         else
             resul.data(indresul).value = resul.data(indresul).value - poly2.data(indresul).value;
-            resul.opcode{indresul} = strcat(strcat(poly1.opcode{cont},'-'),strcat('(',strcat(poly2.opcode{cont},')')));
+            resul.opcode{indresul} = [poly1.opcode{cont}, '-',  '(', poly2.opcode{cont}, ')'];
         end
     end
 end

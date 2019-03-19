@@ -15,7 +15,7 @@ end
 
 for i = 1:length(atual.data)
     X.data(i).value = (atual.data(i).value)';
-    X.opcode{i} = strcat(pre,atual.opcode{i}, aft, char(39));
+    X.opcode{i} = [pre, atual.opcode{i}, aft, char(39)];
 end
 X.label = [pre,atual.label,aft, char(39)];
 
