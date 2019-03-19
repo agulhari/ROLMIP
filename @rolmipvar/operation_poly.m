@@ -371,15 +371,36 @@ end
 resul.vertices = vertices;
 
 return
-
-
-function index = gethash(exponent,exptable,jump)
-index = 0;
-for contsimplex=1:(length(exponent)) 
-    if (length(exptable{contsimplex}) > 0)
-        [i,j] = find(exptable{contsimplex} - repmat(exponent{contsimplex},size(exptable{contsimplex},1),1) == 0);
-        index = index + (find(histc(i,1:size(exptable{contsimplex},1)) == size(exptable{contsimplex},2)) - 1)*jump(contsimplex);
-    end
 end
-index = index + 1;
-return
+
+
+% function index = gethash(exponent,exptable,jump)
+% % 	%idx = zeros(length(exponent), 1);
+% % 	index = 0;
+% % 	%%index2 = 0;
+% % 	for contsimplex=1:(length(exponent))
+% % 		if (length(exptable{contsimplex}) > 0)
+% % 			%centers  = 1:size(exptable{contsimplex}, 1);
+% % 			%d = diff(centers)/2;
+% % 			%edges = [centers(1)-d(1), centers(1:end-1)+d, centers(end)+d(end)];
+% % 			%%[i,~] = find(exptable{contsimplex} - repmat(exponent{contsimplex},size(exptable{contsimplex},1),1) == 0);
+% % 			%%index = index + (find(histc(i,1:size(exptable{contsimplex},1)) == size(exptable{contsimplex},2)) - 1)*jump(contsimplex);
+% % 			%idx(contsimplex, 1) = (find(histcounts(i, edges) == size(exptable{contsimplex},2)) - 1)*jump(contsimplex);
+% % 			%idx(contsimplex, 1) = (find(ismember(exptable{contsimplex}, exponent{contsimplex}, 'rows')) - 1)*jump(contsimplex);
+% % 			%index = 0;
+% % 			for ii = 1:size(exptable{contsimplex}, 1)
+% % 				if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})
+% % 					index = index + (ii - 1)*jump(contsimplex);
+% % 					break;
+% % 				end
+% % 			end
+% % 		end
+% % 	end
+% % 	%assert(sum(idx) == index);
+% % 	%%assert(index == index2);
+% % 	%index = sum(idx) + 1;
+% % 	index = index + 1;
+% 	index = get_hash(exponent, exptable, jump);
+% 	%assert(index == idx2);
+% 	return;
+% end
