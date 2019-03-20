@@ -95,13 +95,14 @@ contexp = ones(1,length(vertices)+1);
 for conttotal=1:numelem
     %vetexponent = [];
     for contsimplex=1:length(tabexponents)
-        polyexponent{contsimplex} = tabexponents{contsimplex}(contexp(contsimplex),:);
+        polyexponent{contsimplex} = full(tabexponents{contsimplex}(contexp(contsimplex),:));
+		polyexponentgethash{contsimplex} = tabexponents{contsimplex}(contexp(contsimplex),:);
 %         if (sum(polyexponent{contsimplex}) > 0)
 %             vetexponent = [vetexponent polyexponent{contsimplex}];
 %         end
     end
             
-    indresul = gethash(polyexponent,tabexponents,jump);
+    indresul = gethash(polyexponentgethash,tabexponents,jump);
     resul.data(indresul).exponent = polyexponent;
     resul.data(indresul).value = 0;
     resul.opcode{indresul} = [];
@@ -404,3 +405,44 @@ end
 % 	%assert(index == idx2);
 % 	return;
 % end
+
+% function index = gethash(exponent,exptable,jump)
+% % % 	%idx = zeros(length(exponent), 1);
+%  	index = 0;
+% % % 	%%index2 = 0;
+% if issparse(exptable{1})
+% 	for contsimplex=1:(length(exponent))
+%  		if (length(exptable{contsimplex}) > 0)
+% 			index = (find(ismember(exptable{contsimplex}, exponent{contsimplex}, 'rows'), 1, 'first') - 1)*jump(contsimplex);
+% 		end
+% 	end
+% 	index = index + 1;
+% else
+% 	index = get_hash(exponent, exptable, jump);
+% end
+ %	for contsimplex=1:(length(exponent))
+ %		if (length(exptable{contsimplex}) > 0)
+% % 			%centers  = 1:size(exptable{contsimplex}, 1);
+% % 			%d = diff(centers)/2;
+% % 			%edges = [centers(1)-d(1), centers(1:end-1)+d, centers(end)+d(end)];
+% % 			%%[i,~] = find(exptable{contsimplex} - repmat(exponent{contsimplex},size(exptable{contsimplex},1),1) == 0);
+% % 			%%index = index + (find(histc(i,1:size(exptable{contsimplex},1)) == size(exptable{contsimplex},2)) - 1)*jump(contsimplex);
+% % 			%idx(contsimplex, 1) = (find(histcounts(i, edges) == size(exptable{contsimplex},2)) - 1)*jump(contsimplex);
+% % 			%idx(contsimplex, 1) = (find(ismember(exptable{contsimplex}, exponent{contsimplex}, 'rows')) - 1)*jump(contsimplex);
+% % 			%index = 0;
+% % 			for ii = 1:size(exptable{contsimplex}, 1)
+% % 				if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})
+% % 					index = index + (ii - 1)*jump(contsimplex);
+% % 					break;
+% % 				end
+% % 			end
+% % 		end
+ %	end
+% % 	%assert(sum(idx) == index);
+% % 	%%assert(index == index2);
+% % 	%index = sum(idx) + 1;
+% % 	index = index + 1;
+% 	index = get_hash(exponent, exptable, jump);
+% 	%assert(index == idx2);
+% 	return;
+%end

@@ -326,7 +326,7 @@ else
                 tam = tam/numcoefs;
                 [exponents] = generate_homogeneous_exponents(vertices,degree);
                 for cont=1:size(exponents,1)
-                    poly.data(cont).exponent = {exponents(cont,:)};
+                    poly.data(cont).exponent = {full(exponents(cont,:))};
                     poly.data(cont).value = M(:,(cont-1)*tam+1:cont*tam);
                 end
             else
@@ -356,7 +356,7 @@ else
                         else
                             [exponents] = generate_homogeneous_exponents(vertices,degree);
                             for cont=1:size(exponents,1)
-                                poly.data(cont).exponent = {exponents(cont,:)};
+                                poly.data(cont).exponent = {full(exponents(cont,:))};
                                 poly.data(cont).value = M{cont};
                             end
                         end
@@ -374,7 +374,7 @@ else
                             exponents{contsimplex} = zeros(1,max([vertices(contsimplex) 1])); %exponents{contsimplex} = 0; BATEMA
                             numcoefs = numcoefs + 1;
                         end
-                        exponent{contsimplex} = exponents{contsimplex}(1,:);
+                        exponent{contsimplex} = full(exponents{contsimplex}(1,:));
                     end
                     
                     if (numtotal > 1)
