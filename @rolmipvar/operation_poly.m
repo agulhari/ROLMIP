@@ -420,8 +420,8 @@ end
 % else
 % 	index = get_hash(exponent, exptable, jump);
 % end
- %	for contsimplex=1:(length(exponent))
- %		if (length(exptable{contsimplex}) > 0)
+% %	for contsimplex=1:(length(exponent))
+% %		if (length(exptable{contsimplex}) > 0)
 % % 			%centers  = 1:size(exptable{contsimplex}, 1);
 % % 			%d = diff(centers)/2;
 % % 			%edges = [centers(1)-d(1), centers(1:end-1)+d, centers(end)+d(end)];
@@ -442,7 +442,7 @@ end
 % % 	%%assert(index == index2);
 % % 	%index = sum(idx) + 1;
 % % 	index = index + 1;
-% 	index = get_hash(exponent, exptable, jump);
-% 	%assert(index == idx2);
+% 	idx2 = get_hash(exponent, exptable, jump);
+% 	assert(index == idx2);
 % 	return;
 %end
