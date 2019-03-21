@@ -2,7 +2,7 @@ function [exponents] = generate_homogeneous_exponents(vertices,degree)
 % [exponents] = generate_homogeneous_exponents(vertices,degree)
 % Recursive algorithm to generate the exponents of a homogeneous polynomial
 if vertices*degree > 10
-	exponents = sparse(0, 0);
+	exponents = sparse([], [], [], 0, 0, vertices);%nzmax = factorial(vertices + degree - 1)/factorial(degree)/factorial(vertices - 1)?
 else
 	exponents = [];
 end
