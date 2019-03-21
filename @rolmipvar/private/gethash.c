@@ -1,3 +1,24 @@
+/*
+MEX function for calculation of gethash functionality.
+Does basically, what sum(find(ismember(exptable, exponent, 'rows')).*jump) does, if both arguments are numeric and dimensions are appropriate.
+All types of numeric exptable and exponent arguments are allowed (including sparse) inside the cell elements.
+
+function index = gethash(exponent,exptable,jump)
+	index = 0;
+	for contsimplex = 1:(length(exponent))
+		if (length(exptable{contsimplex}) > 0)
+			for ii = 1:size(exptable{contsimplex}, 1)
+				if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})
+					index = index + (ii - 1)*jump(contsimplex);
+					break;
+				end
+			end
+		end
+	end
+	index = index + 1;
+	return;
+end*/
+
 #define NLHS 1
 #define NRHS 3
 #define pEXPONENT 0
@@ -11,64 +32,70 @@
 
 #include "mex.h"
 
-#define GETINDEX(type) for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {\
-				ismatch = true;\
-				for (jj = 0; jj < dimensionsEXPTABLEElement[1]; ++jj) {\
-					if (exptableContsimplexNumeric##type[jj*(dimensionsEXPTABLEElement[0]) + ii] != exponentContsimplexNumeric##type[jj]) {\
-						ismatch = false;\
-						break;\
-					}\
-				}\
-				if (ismatch) {\
-					index = ((double)ii)*jumpContsimplexNumeric[countsimplex];\
+#define GETINDEX(type) /*for ii = 1:size(exptable{contsimplex}, 1)*/\
+		for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {\
+			ismatch = true;\
+			/*if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})*/\
+			for (jj = 0; jj < dimensionsEXPTABLEElement[1]; ++jj) {\
+				if (exptableContsimplexNumeric##type[jj*(dimensionsEXPTABLEElement[0]) + ii] != exponentContsimplexNumeric##type[jj]) {\
+					ismatch = false;\
 					break;\
 				}\
-			}
-#define GETINDEXSPARSE(type) for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {\
-				ismatch = true;\
-				ismatchvalue = true;\
-				ismatchcolumns = true;\
-				kk = 0;\
-				for (jj = 0; jj < dimensionsEXPTABLEElement[1]; ++jj) {\
-					/*table contains value in current column*/\
-					if (jj >= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii]] && exptableContsimplexNumericSparseJCCSR[ii + 1] > 0 && jj <= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii + 1] - 1]) {\
-						if (exptableContsimplexNumericSparseIRCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]] == jj) {\
-							/*value is equal*/\
-							if (((double) exponentContsimplexNumeric##type[jj]) != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {\
-								ismatchvalue = false;\
-								ismatchcolumns = false;\
-								break;\
-							}\
-							++kk;\
-						}\
-					}\
-					else {\
-						/*value not in table and exponent must be 0*/\
-						if ((double) exponentContsimplexNumeric##type[jj] != 0.0) {\
+			}\
+			if (ismatch) {\
+				/*index = index + (ii - 1)*jump(contsimplex);*/\
+				index = index + ((double)ii)*jumpContsimplexNumeric[countsimplex];\
+				break;\
+			}\
+		}
+#define GETINDEXSPARSE(type) /*for ii = 1:size(exptable{contsimplex}, 1)*/\
+		for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {\
+			ismatch = true;\
+			ismatchvalue = true;\
+			ismatchcolumns = true;\
+			kk = 0;\
+			/*if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})*/\
+			for (jj = 0; jj < dimensionsEXPTABLEElement[1]; ++jj) {\
+				/*table contains value in current column*/\
+				if (jj >= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii]] && exptableContsimplexNumericSparseJCCSR[ii + 1] > 0 && jj <= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii + 1] - 1]) {\
+					if (exptableContsimplexNumericSparseIRCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]] == jj) {\
+						/*value is equal*/\
+						if (((double) exponentContsimplexNumeric##type[jj]) != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {\
 							ismatchvalue = false;\
+							ismatchcolumns = false;\
 							break;\
 						}\
-					}\
-					if (!ismatchvalue) {\
-						ismatch = false;\
-						break;\
-					}\
-					if (!ismatchcolumns) {\
-						ismatch = false;\
-						break;\
+						++kk;\
 					}\
 				}\
-				if (!ismatchcolumns) {\
-					ismatch = false;\
+				else {\
+					/*value not in table and exponent must be 0*/\
+					if ((double) exponentContsimplexNumeric##type[jj] != 0.0) {\
+						ismatchvalue = false;\
+						break;\
+					}\
 				}\
 				if (!ismatchvalue) {\
 					ismatch = false;\
-				}\
-				if (ismatch) {\
-					index = ((double)ii)*jumpContsimplexNumeric[countsimplex];\
 					break;\
 				}\
-			}
+				if (!ismatchcolumns) {\
+					ismatch = false;\
+					break;\
+				}\
+			}\
+			if (!ismatchcolumns) {\
+				ismatch = false;\
+			}\
+			if (!ismatchvalue) {\
+				ismatch = false;\
+			}\
+			if (ismatch) {\
+				/*index = index + (ii - 1)*jump(contsimplex);*/\
+				index = index + ((double)ii)*jumpContsimplexNumeric[countsimplex];\
+				break;\
+			}\
+		}
 
 static int csr_tocsc(const mwIndex n_row, const mwIndex n_col, const mwIndex *Ap, const mwIndex *Aj, const double *Ax, mwIndex *Bp, mwIndex *Bi, double *Bx);
 static int csc_tocsr(const mwIndex n_row, const mwIndex n_col, const mwIndex *Ap, const mwIndex *Aj, const double *Ax, mwIndex *Bp, mwIndex *Bi, double *Bx);
@@ -171,6 +198,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	}
 	lengthExponent = dimensionsEXPONENT[0]*dimensionsEXPONENT[1];
 	jumpContsimplexNumeric = mxGetPr(pargJUMP);
+	/*for contsimplex=1:(length(exponent))*/
 	for (countsimplex = 0; countsimplex < lengthExponent; ++countsimplex) {
 		exponentContsimplex = mxGetCell(pargEXPONENT, countsimplex);
 		if (exponentContsimplex == NULL) {
@@ -190,6 +218,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Element %d of exptable must not be complex.", countsimplex + 1);
 			return;
 		}
+		/*if (length(exptable{contsimplex}) > 0)*/
 		if (mxIsEmpty(exptableContsimplex) && mxIsEmpty(exptableContsimplex)) {
 			index = 0;
 			break;
@@ -268,11 +297,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 				}
 				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Could not convert sparse to CSR.");
 			}
+			/*for ii = 1:size(exptable{contsimplex}, 1)*/
 			for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {
 				ismatch = true;
 				ismatchvalue = true;
 				ismatchcolumns = true;
 				jj = 0;
+				/*if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})*/
 				for (kk = 0; kk < dimensionsEXPTABLEElement[1]; ++kk) {
 					// table contains value in current column
 					if (kk >= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii]] && exptableContsimplexNumericSparseJCCSR[ii + 1] > 0 && kk <= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii + 1] - 1]) {
@@ -316,6 +347,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 					ismatch = false;
 				}
 				if (ismatch) {
+					/*index = index + (ii - 1)*jump(contsimplex);*/
 					index = ((double)ii)*jumpContsimplexNumeric[countsimplex];
 					break;
 				}
@@ -393,14 +425,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			isuint16 = mxIsUint16(exponentContsimplex);
 			isuint32 = mxIsUint32(exponentContsimplex);
 			isuint64 = mxIsUint64(exponentContsimplex);
-			/*if (!mxIsDouble(exponentContsimplex)) {
-				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Element %d of exponent must be of type 'double'.", countsimplex + 1);
-				return;
-			}
-			if (!mxIsDouble(exptableContsimplex)) {
-				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Element %d of exptable must be of type 'double'.", countsimplex + 1);
-				return;
-			}*/
 			if (!isdouble && !isfloat && !isint8 && !isint16 && !isint32 && !isint64 && !isuint8 && !isuint16 && !isuint32 && !isuint64) {
 				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Element %d of exptable must be numeric and of the same type as exponent.", countsimplex + 1);
 				return;
@@ -489,51 +513,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Unknown data for element %d.", countsimplex + 1);
 				return;
 			}
-			/*for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {
-				ismatch = true;
-				ismatchvalue = true;
-				ismatchcolumns = true;
-				kk = 0;
-				for (jj = 0; jj < dimensionsEXPTABLEElement[1]; ++jj) {
-					// table contains value in current column
-					if (jj >= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii]] && exptableContsimplexNumericSparseJCCSR[ii + 1] > 0 && jj <= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii + 1] - 1]) {
-						if (exptableContsimplexNumericSparseIRCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]] == jj) {
-							// value is equal
-							if (((double) exponentContsimplexNumericDouble[jj]) != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {
-								ismatchvalue = false;
-								ismatchcolumns = false;
-								break;
-							}
-							++kk;
-						}
-					}
-					else {
-						// value not in table and exponent must be 0
-						if ((double) exponentContsimplexNumericDouble[jj] != 0.0) {
-							ismatchvalue = false;
-							break;
-						}
-					}
-					if (!ismatchvalue) {
-						ismatch = false;
-						break;
-					}
-					if (!ismatchcolumns) {
-						ismatch = false;
-						break;
-					}
-				}
-				if (!ismatchcolumns) {
-					ismatch = false;
-				}
-				if (!ismatchvalue) {
-					ismatch = false;
-				}
-				if (ismatch) {
-					index = ((double)ii)*jumpContsimplexNumeric[countsimplex];
-					break;
-				}
-			}*/
 			if (exptableContsimplexNumericSparseDoubleCSR != NULL) {
 				mxFree(exptableContsimplexNumericSparseDoubleCSR);
 				exptableContsimplexNumericSparseDoubleCSR = NULL;
@@ -562,14 +541,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			isuint16 = mxIsUint16(exponentContsimplex) && mxIsUint16(exptableContsimplex);
 			isuint32 = mxIsUint32(exponentContsimplex) && mxIsUint32(exptableContsimplex);
 			isuint64 = mxIsUint64(exponentContsimplex) && mxIsUint64(exptableContsimplex);
-			/*if (!mxIsDouble(exponentContsimplex)) {
-				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Element %d of exponent must be of type 'double'.", countsimplex + 1);
-				return;
-			}
-			if (!mxIsDouble(exptableContsimplex)) {
-				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Element %d of exptable must be of type 'double'.", countsimplex + 1);
-				return;
-			}*/
 			if (!isdouble && !isfloat && !isint8 && !isint16 && !isint32 && !isint64 && !isuint8 && !isuint16 && !isuint32 && !isuint64) {
 				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Element %d of exptable must be numeric and of the same type as exponent.", countsimplex + 1);
 				return;
@@ -670,6 +641,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			}
 		}
 	}
+	/*index = index + 1;*/
 	index = index + 1;
 	pargINDEX = mxCreateDoubleMatrix(1, 1, mxREAL);
 	if (pargINDEX == NULL) {
