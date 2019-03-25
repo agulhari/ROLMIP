@@ -53,7 +53,15 @@ function poly = rolmipvar(varargin)
 
 scalar = false;
 polynomial = false;
-if (nargin == 1)
+if nargin == 0% needed for loading rolmipvar objects from file
+	poly.label = '';
+    poly.vertices = [];
+    poly.opcode = '';
+    poly.data = '';
+    poly.bounds = [];
+    poly = class(poly, 'rolmipvar');
+    return;
+elseif (nargin == 1)
   M = varargin{1};
   if(isstruct(M))
     poly.label = M.label;
