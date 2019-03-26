@@ -1,7 +1,8 @@
 /*
 MEX function for calculation of gethash functionality.
-Does basically, what sum(find(ismember(exptable, exponent, 'rows')).*jump) does, if both arguments are numeric and dimensions are appropriate.
+Does basically, what the code in rolmipvar.operation_poly/gethash does, if both arguments are numeric and dimensions are appropriate.
 All types of numeric exptable and exponent arguments are allowed (including sparse) inside the cell elements.
+Scalar exponents are expanded to the size of exponent table rows.
 
 function index = gethash(exponent,exptable,jump)
 	index = 0;
@@ -37,9 +38,18 @@ end*/
 			ismatch = true;\
 			/*if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})*/\
 			for (jj = 0; jj < dimensionsEXPTABLEElement[1]; ++jj) {\
-				if (exptableContsimplexNumeric##type[jj*(dimensionsEXPTABLEElement[0]) + ii] != exponentContsimplexNumeric##type[jj]) {\
-					ismatch = false;\
-					break;\
+				/* do scalar expansion of exponent*/\
+				if (isscalarEXPONENT) {\
+					if (exptableContsimplexNumeric##type[jj*(dimensionsEXPTABLEElement[0]) + ii] != exponentContsimplexNumeric##type[0]) {\
+						ismatch = false;\
+						break;\
+					}\
+				}\
+				else {\
+					if (exptableContsimplexNumeric##type[jj*(dimensionsEXPTABLEElement[0]) + ii] != exponentContsimplexNumeric##type[jj]) {\
+						ismatch = false;\
+						break;\
+					}\
 				}\
 			}\
 			if (ismatch) {\
@@ -60,19 +70,38 @@ end*/
 				if (jj >= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii]] && exptableContsimplexNumericSparseJCCSR[ii + 1] > 0 && jj <= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii + 1] - 1]) {\
 					if (exptableContsimplexNumericSparseIRCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]] == jj) {\
 						/*value is equal*/\
-						if (((double) exponentContsimplexNumeric##type[jj]) != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {\
-							ismatchvalue = false;\
-							ismatchcolumns = false;\
-							break;\
+						if (isscalarEXPONENT) {\
+							/*do scalar expansion for exponent*/\
+							if (((double) exponentContsimplexNumeric##type[0]) != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {\
+								ismatchvalue = false;\
+								ismatchcolumns = false;\
+								break;\
+							}\
+						}\
+						else {\
+							if (((double) exponentContsimplexNumeric##type[jj]) != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {\
+								ismatchvalue = false;\
+								ismatchcolumns = false;\
+								break;\
+							}\
 						}\
 						++kk;\
 					}\
 				}\
 				else {\
 					/*value not in table and exponent must be 0*/\
-					if ((double) exponentContsimplexNumeric##type[jj] != 0.0) {\
-						ismatchvalue = false;\
-						break;\
+					if (isscalarEXPONENT) {\
+						/*do scalar expansion on exponent*/\
+						if ((double) exponentContsimplexNumeric##type[0] != 0.0) {\
+							ismatchvalue = false;\
+							break;\
+						}\
+					}\
+					else {\
+						if ((double) exponentContsimplexNumeric##type[jj] != 0.0) {\
+							ismatchvalue = false;\
+							break;\
+						}\
 					}\
 				}\
 				if (!ismatchvalue) {\
@@ -117,7 +146,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		return;
 	end*/
 	unsigned int index = 0;
-	boolean_T ismatch = false, ismatchcolumns = false, ismatchvalue = false, isdouble = false, isfloat = false, isint8 = false, isint16 = false, isint32 = false, isint64 = false, isuint8 = false, isuint16 = false, isuint32 = false, isuint64 = false;
+	boolean_T ismatch = false, ismatchcolumns = false, ismatchvalue = false, isdouble = false, isfloat = false, isint8 = false, isint16 = false, isint32 = false, isint64 = false, isuint8 = false, isuint16 = false, isuint32 = false, isuint64 = false, isscalarEXPONENT = false;
 	double *indexptr = NULL;
 	mwSize countsimplex = 0, ii = 0, jj = 0, kk = 0, ll = 0;
 	const mwSize *dimensionsEXPONENT = NULL, *dimensionsEXPTABLE = NULL, *dimensionsJUMP = NULL, *dimensionsEXPONENTElement = NULL, *dimensionsEXPTABLEElement = NULL;
@@ -152,6 +181,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		return;
 	}
 	if (!mxIsCell(pargEXPONENT)) {
+		if (mxIsNumeric(pargEXPONENT) && mxIsEmpty(pargEXPONENT)) {
+			pargINDEX = mxCreateDoubleMatrix(1, 1, mxREAL);
+			if (pargINDEX == NULL) {
+				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Out of Memory.");
+				return;
+			}
+			indexptr = mxGetPr(pargINDEX);
+			indexptr[0] = 1;
+			return;
+		}
 		mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Exponents must be of type 'cell'.");
 		return;
 	}
@@ -220,8 +259,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		}
 		/*if (length(exptable{contsimplex}) > 0)*/
 		if (mxIsEmpty(exptableContsimplex) && mxIsEmpty(exptableContsimplex)) {
-			index = 0;
-			break;
+			continue;
 		}
 		if (mxGetNumberOfDimensions(exponentContsimplex) > 2) {
 			mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Elements of exponent must be two dimensional matrices.");
@@ -233,9 +271,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			return;
 		}
 		dimensionsEXPTABLEElement = mxGetDimensions(exptableContsimplex);
-		if (dimensionsEXPONENTElement[1] != dimensionsEXPTABLEElement[1]) {
-			mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Number of columns of exponent and exptable must match for element %d.", countsimplex + 1);
-			return;
+		if (dimensionsEXPONENTElement[1] == 1) {
+			isscalarEXPONENT = true;
+		}
+		else {
+			if (dimensionsEXPONENTElement[1] != dimensionsEXPTABLEElement[1]) {
+				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Number of columns of exponent and exptable must match for element %d.", countsimplex + 1);
+				return;
+			}
+			isscalarEXPONENT = false;
 		}
 		if (1 != dimensionsEXPONENTElement[0]) {
 			mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Exponent must have one column for element %d.", countsimplex + 1);
@@ -250,6 +294,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			mwSize nzmaxEXPTABLE = 0;
 			double *exptableContsimplexNumericSparseDoubleCSR = NULL;
 			mwIndex *exptableContsimplexNumericSparseJCCSR = NULL, *exptableContsimplexNumericSparseIRCSR = NULL;
+			if (dimensionsEXPONENTElement[1] != dimensionsEXPTABLEElement[1]) {
+				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Number of columns of exponent and exptable must match for element %d.", countsimplex + 1);
+				return;
+			}
 			exponentContsimplexNumericSparseDouble = mxGetPr(exponentContsimplex);
 			exptableContsimplexNumericSparseDouble = mxGetPr(exptableContsimplex);
 			if (exponentContsimplexNumericSparseDouble == NULL || exptableContsimplexNumericSparseDouble == NULL) {
