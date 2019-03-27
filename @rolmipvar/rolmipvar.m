@@ -63,8 +63,11 @@ if nargin == 0% needed for loading rolmipvar objects from file
     return;
 elseif (nargin == 1)
   M = varargin{1};
-  if(isstruct(M))
+  if (isstruct(M))
     poly.label = M.label;
+	if ~isempty(M.label) && ~ischar(M.label)
+		error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+	end
     poly.vertices = M.vertices;
     poly.opcode = M.opcode;
     poly.data = M.data;
@@ -84,7 +87,10 @@ elseif (nargin == 2)
     if (strcmp(label,'scalar'))
         label = M;
         scalar = true;
-    end
+	end
+	if ~isempty(label) && ~ischar(label)
+		error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+	end
 elseif (nargin == 3) 
     M = varargin{1};
     if (isstr(varargin{3}))
@@ -95,7 +101,10 @@ elseif (nargin == 3)
         elseif ((length(M) > 1) && ~(strcmp(varargin{3},'scalar')))
             error('Invalid third argument');
             poly = [];
-        end
+		end
+		if ~isempty(varargin{2}) && ~ischar(varargin{2})
+			error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+		end
         label = varargin{2};
         vertices = 0;
         degree = 0;
@@ -108,11 +117,17 @@ elseif (nargin == 3)
         end
     else %Polynomial parameter representation
         polynomial = true;
+		if ~ischar(varargin{2})
+			error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+		end
         label = varargin{2};
         bounds = varargin{3};
     end
 elseif (nargin == 4)
     M = varargin{1};
+	if ~isempty(varargin{2}) && ~ischar(varargin{2})
+		error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+	end
     label = varargin{2};
     vertices = varargin{3};
     degree = varargin{4};
@@ -120,6 +135,9 @@ elseif (nargin == 5)
     if (~iscell(varargin{4}))
         rows = varargin{1};
         cols = varargin{2};
+		if ~isempty(varargin{3}) && ~ischar(varargin{3})
+			error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+		end
         label = varargin{3};
         vertices = varargin{4};
         degree = varargin{5};
@@ -128,6 +146,9 @@ elseif (nargin == 5)
     else
         rows = varargin{1};
         cols = varargin{2};
+		if ~isempty(varargin{3}) && ~ischar(varargin{3})
+			error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+		end
         label = varargin{3};
         polmask = varargin{4};
         bounds = varargin{5};
@@ -138,6 +159,9 @@ elseif (nargin == 6)
     if (~iscell(varargin{5}))
         rows = varargin{1};
         cols = varargin{2};
+		if ~isempty(varargin{3}) && ~ischar(varargin{3})
+			error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+		end
         label = varargin{3};
         parametr = varargin{4};
         parametrextra = 'real';
@@ -147,6 +171,9 @@ elseif (nargin == 6)
         polynomial = true;
         rows = varargin{1};
         cols = varargin{2};
+		if ~isempty(varargin{3}) && ~ischar(varargin{3})
+			error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+		end
         label = varargin{3};
         parametr = varargin{4};
         parametrextra = 'real';
@@ -157,6 +184,9 @@ elseif (nargin == 7)
     if (~iscell(varargin{5}))
         rows = varargin{1};
         cols = varargin{2};
+		if ~isempty(varargin{3}) && ~ischar(varargin{3})
+			error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+		end
         label = varargin{3};
         parametr = varargin{4};
         parametrextra = varargin{5};
@@ -166,6 +196,9 @@ elseif (nargin == 7)
         polynomial = true;
         rows = varargin{1};
         cols = varargin{2};
+		if ~isempty(varargin{3}) && ~ischar(varargin{3})
+			error('ROLMIP:construct:label', 'Label must be of type ''char''.');
+		end
         label = varargin{3};
         parametr = varargin{4};
         parametrextra = varargin{5};
@@ -256,9 +289,9 @@ else
         conttotal = 1;
         for (contsimplex = 1:length(vertices))
             if (vertices(contsimplex) > 0)
-                numcoefs = (factorial(vertices(contsimplex) + ...
-                    degree(contsimplex) - 1))/(factorial(degree(contsimplex)) ...
-                    *factorial(vertices(contsimplex)-1));
+                numcoefs = nchoosek(vertices(contsimplex) + degree(contsimplex) - 1, degree(contsimplex));%(factorial(vertices(contsimplex) + ...
+                    %degree(contsimplex) - 1))/(factorial(degree(contsimplex)) ...
+                    %*factorial(vertices(contsimplex)-1));
             else
                 numcoefs = 1;
             end
@@ -288,7 +321,7 @@ else
             return
         else
             if (degree > 0) %Not a constant
-                numcoefs = (factorial(vertices + degree - 1))/(factorial(degree)*factorial(vertices-1));
+                numcoefs = nchoosek(vertices + degree - 1, degree);%(factorial(vertices + degree - 1))/(factorial(degree)*factorial(vertices-1));% Inf or NaN for large numbers
                 [order,tam] = size(M);
                 tam = tam/numcoefs;
                 [exponents] = generate_homogeneous_exponents(vertices,degree);
@@ -315,7 +348,7 @@ else
             else
                 if (nargin < 5) %The matrices are given in the input data
                     if (degree > 0)
-                        numcoefs = (factorial(vertices + degree - 1))/(factorial(degree)*factorial(vertices-1));
+                        numcoefs = nchoosek(vertices + degree - 1, degree);%(factorial(vertices + degree - 1))/(factorial(degree)*factorial(vertices-1));
                         if (length(M) ~= numcoefs)
                             error('Invalid number of monomials entered');
                             poly = [];
@@ -336,7 +369,7 @@ else
                     for contsimplex=1:length(degree)
                         if (degree(contsimplex) > 0) %Not a constant
                             [exponents{contsimplex}] = generate_homogeneous_exponents(vertices(contsimplex),degree(contsimplex));
-                            numcoefs = numcoefs + (factorial(vertices(contsimplex) + degree(contsimplex) - 1))/(factorial(degree(contsimplex))*factorial(vertices(contsimplex)-1));
+                            numcoefs = numcoefs + nchoosek(vertices(contsimplex) + degree(contsimplex) - 1, degree(contsimplex));%(factorial(vertices(contsimplex) + degree(contsimplex) - 1))/(factorial(degree(contsimplex))*factorial(vertices(contsimplex)-1));
                         else %degree(contsimplex) == 0
                             exponents{contsimplex} = zeros(1,max([vertices(contsimplex) 1])); %exponents{contsimplex} = 0; BATEMA
                             numcoefs = numcoefs + 1;
@@ -444,10 +477,10 @@ else
     %if (sum(sum(isnan(double(poly.data(1).value)))) > 0)
         %if (isnan(double(poly.data(1).value(1,1))))
         if (scalar)
-            poly.opcode{1} = strcat(poly.label,'#S1');
+            poly.opcode{1} = [poly.label,'#S1'];
         else
             for cont=1:length(poly.data)
-                poly.opcode{cont} = strcat(strcat(poly.label,'#V'),num2str(cont));
+                poly.opcode{cont} = [poly.label, '#V', num2str(cont)];
             end
         end
     else
@@ -458,16 +491,16 @@ else
             M = M{1};
         end
         if (scalar)
-            poly.opcode{1} = strcat(poly.label,'#K1');
+            poly.opcode{1} = [poly.label, '#K1'];
         elseif ((nargin == 2) && (sum(sum(M)) == 0))
             %Zero matrix
-            poly.opcode{1} = strcat(poly.label,'#P1');
+            poly.opcode{1} = [poly.label, '#P1'];
         elseif ((nargin == 2) && (size(M,1) == size(M,2)) && (sum(sum(M-eye(length(M)))) == 0))
             %Identity matrix
-            poly.opcode{1} = strcat(poly.label,'#P1');
+            poly.opcode{1} = [poly.label, '#P1'];
         else
             for cont=1:length(poly.data)
-                poly.opcode{cont} = strcat(strcat(poly.label,'#C'),num2str(cont));
+                poly.opcode{cont} = [poly.label, '#C', num2str(cont)];
             end
         end
     end
@@ -483,13 +516,13 @@ end
 return
 
 
-function index = gethash(exponent,exptable,jump)
-index = 0;
-for contsimplex=1:(length(exponent)) 
-    if (length(exptable{contsimplex}) > 0)
-        [i,j] = find(exptable{contsimplex} - repmat(exponent{contsimplex},size(exptable{contsimplex},1),1) == 0);
-        index = index + (find(histc(i,1:size(exptable{contsimplex},1)) == size(exptable{contsimplex},2)) - 1)*jump(contsimplex);
-    end
-end
-index = index + 1;
-return
+%function index = gethash(exponent,exptable,jump)
+%index = 0;
+%for contsimplex=1:(length(exponent)) 
+%    if (length(exptable{contsimplex}) > 0)
+%        [i,j] = find(exptable{contsimplex} - repmat(exponent{contsimplex},size(exptable{contsimplex},1),1) == 0);
+%        index = index + (find(histc(i,1:size(exptable{contsimplex},1)) == size(exptable{contsimplex},2)) - 1)*jump(contsimplex);
+%    end
+%end
+%index = index + 1;
+%return
