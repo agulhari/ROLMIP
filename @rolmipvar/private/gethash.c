@@ -32,6 +32,7 @@ end*/
 #define pargINDEX plhs[pINDEX]
 
 #include "mex.h"
+#include <omp.h>
 
 #define GETINDEX(type) /*for ii = 1:size(exptable{contsimplex}, 1)*/\
 		for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {\
@@ -130,7 +131,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	unsigned int index = 0;
 	boolean_T ismatch = false, isdouble = false, isfloat = false, isint8 = false, isint16 = false, isint32 = false, isint64 = false, isuint8 = false, isuint16 = false, isuint32 = false, isuint64 = false, isscalarEXPONENT = false;
 	double *indexptr = NULL;
-	mwSize countsimplex = 0, ii = 0, jj = 0, kk = 0;
+	mwSize countsimplex = 0, jj = 0, kk = 0;
+	signed int ii = 0;
 	const mwSize *dimensionsEXPONENT = NULL, *dimensionsEXPTABLE = NULL, *dimensionsJUMP = NULL, *dimensionsEXPONENTElement = NULL, *dimensionsEXPTABLEElement = NULL;
 	//mwSize nzmaxEXPONENT = 0, nzmaxEXPTABLE = 0;
 	size_t lengthExponent = 0;
@@ -327,41 +329,60 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 				}
 				mexErrMsgIdAndTxt("ROLMIP:gethash:input", "Could not convert sparse to CSR.");
 			}
-			/*for ii = 1:size(exptable{contsimplex}, 1)*/
-			for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {
-				ismatch = true;
-				kk = 0;
-				/*if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})*/
-				for (jj = 0; jj < dimensionsEXPTABLEElement[1]; ++jj) {
-					// table contains value in current column
-					if (jj >= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii]] && exptableContsimplexNumericSparseJCCSR[ii + 1] > 0 && jj <= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii + 1] - 1]) {
-						if (exptableContsimplexNumericSparseIRCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]] == jj) {
-							// row in exponent is empty but not empty in exptable
-							if (exponentContsimplexNumericSparseJC[jj + 1] - exponentContsimplexNumericSparseJC[jj] <= 0) {
+			{
+				unsigned int forindex = 0;
+				#if defined(_OPENMP)
+				boolean_T indexfound = false;
+				#endif
+				#pragma omp parallel for private(ismatch, kk, jj) shared(indexfound) reduction(+: forindex)
+				/*for ii = 1:size(exptable{contsimplex}, 1)*/
+				for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {
+					#if defined(_OPENMP)
+					if (indexfound) {
+						continue;
+					}
+					#endif
+					ismatch = true;
+					kk = 0;
+					/*if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})*/
+					for (jj = 0; jj < (signed int) dimensionsEXPTABLEElement[1]; ++jj) {
+						// table contains value in current column
+						if (jj >= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii]] && exptableContsimplexNumericSparseJCCSR[ii + 1] > 0 && jj <= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii + 1] - 1]) {
+							if (exptableContsimplexNumericSparseIRCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]] == jj) {
+								// row in exponent is empty but not empty in exptable
+								if (exponentContsimplexNumericSparseJC[jj + 1] - exponentContsimplexNumericSparseJC[jj] <= 0) {
+									ismatch = false;
+									break;
+								}
+								// value is equal
+								if (exponentContsimplexNumericSparseDouble[exponentContsimplexNumericSparseJC[jj]] != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {
+									ismatch = false;
+									break;
+								}
+								++kk;
+							}
+						}
+						else {
+							// exponent has value not in table
+							if (exponentContsimplexNumericSparseJC[jj + 1] - exponentContsimplexNumericSparseJC[jj] > 0) {
 								ismatch = false;
 								break;
 							}
-							// value is equal
-							if (exponentContsimplexNumericSparseDouble[exponentContsimplexNumericSparseJC[jj]] != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {
-								ismatch = false;
-								break;
-							}
-							++kk;
 						}
 					}
-					else {
-						// exponent has value not in table
-						if (exponentContsimplexNumericSparseJC[jj + 1] - exponentContsimplexNumericSparseJC[jj] > 0) {
-							ismatch = false;
-							break;
-						}
+					if (ismatch) {
+						/*index = index + (ii - 1)*jump(contsimplex);*/
+						//index = index + ((double)ii)*jumpContsimplexNumeric[countsimplex];
+						//break;
+						forindex += ((double)ii)*jumpContsimplexNumeric[countsimplex];
+						#if defined(_OPENMP)
+						indexfound = true;
+						#else
+						break;
+						#endif
 					}
 				}
-				if (ismatch) {
-					/*index = index + (ii - 1)*jump(contsimplex);*/
-					index = index + ((double)ii)*jumpContsimplexNumeric[countsimplex];
-					break;
-				}
+				index = index + forindex;
 			}
 			if (exptableContsimplexNumericSparseDoubleCSR != NULL) {
 				mxFree(exptableContsimplexNumericSparseDoubleCSR);
