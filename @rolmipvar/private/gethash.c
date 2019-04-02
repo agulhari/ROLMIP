@@ -61,8 +61,6 @@ end*/
 #define GETINDEXSPARSE(type) /*for ii = 1:size(exptable{contsimplex}, 1)*/\
 		for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {\
 			ismatch = true;\
-			ismatchvalue = true;\
-			ismatchcolumns = true;\
 			kk = 0;\
 			/*if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})*/\
 			for (jj = 0; jj < dimensionsEXPTABLEElement[1]; ++jj) {\
@@ -73,15 +71,13 @@ end*/
 						if (isscalarEXPONENT) {\
 							/*do scalar expansion for exponent*/\
 							if (((double) exponentContsimplexNumeric##type[0]) != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {\
-								ismatchvalue = false;\
-								ismatchcolumns = false;\
+								ismatch = false;\
 								break;\
 							}\
 						}\
 						else {\
 							if (((double) exponentContsimplexNumeric##type[jj]) != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {\
-								ismatchvalue = false;\
-								ismatchcolumns = false;\
+								ismatch = false;\
 								break;\
 							}\
 						}\
@@ -93,31 +89,17 @@ end*/
 					if (isscalarEXPONENT) {\
 						/*do scalar expansion on exponent*/\
 						if ((double) exponentContsimplexNumeric##type[0] != 0.0) {\
-							ismatchvalue = false;\
+							ismatch = false;\
 							break;\
 						}\
 					}\
 					else {\
 						if ((double) exponentContsimplexNumeric##type[jj] != 0.0) {\
-							ismatchvalue = false;\
+							ismatch = false;\
 							break;\
 						}\
 					}\
 				}\
-				if (!ismatchvalue) {\
-					ismatch = false;\
-					break;\
-				}\
-				if (!ismatchcolumns) {\
-					ismatch = false;\
-					break;\
-				}\
-			}\
-			if (!ismatchcolumns) {\
-				ismatch = false;\
-			}\
-			if (!ismatchvalue) {\
-				ismatch = false;\
 			}\
 			if (ismatch) {\
 				/*index = index + (ii - 1)*jump(contsimplex);*/\
@@ -146,9 +128,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 		return;
 	end*/
 	unsigned int index = 0;
-	boolean_T ismatch = false, ismatchcolumns = false, ismatchvalue = false, isdouble = false, isfloat = false, isint8 = false, isint16 = false, isint32 = false, isint64 = false, isuint8 = false, isuint16 = false, isuint32 = false, isuint64 = false, isscalarEXPONENT = false;
+	boolean_T ismatch = false, isdouble = false, isfloat = false, isint8 = false, isint16 = false, isint32 = false, isint64 = false, isuint8 = false, isuint16 = false, isuint32 = false, isuint64 = false, isscalarEXPONENT = false;
 	double *indexptr = NULL;
-	mwSize countsimplex = 0, ii = 0, jj = 0, kk = 0, ll = 0;
+	mwSize countsimplex = 0, ii = 0, jj = 0, kk = 0;
 	const mwSize *dimensionsEXPONENT = NULL, *dimensionsEXPTABLE = NULL, *dimensionsJUMP = NULL, *dimensionsEXPONENTElement = NULL, *dimensionsEXPTABLEElement = NULL;
 	//mwSize nzmaxEXPONENT = 0, nzmaxEXPTABLE = 0;
 	size_t lengthExponent = 0;
@@ -348,55 +330,36 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 			/*for ii = 1:size(exptable{contsimplex}, 1)*/
 			for (ii = 0; ii < dimensionsEXPTABLEElement[0]; ++ii) {
 				ismatch = true;
-				ismatchvalue = true;
-				ismatchcolumns = true;
-				jj = 0;
+				kk = 0;
 				/*if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})*/
-				for (kk = 0; kk < dimensionsEXPTABLEElement[1]; ++kk) {
+				for (jj = 0; jj < dimensionsEXPTABLEElement[1]; ++jj) {
 					// table contains value in current column
-					if (kk >= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii]] && exptableContsimplexNumericSparseJCCSR[ii + 1] > 0 && kk <= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii + 1] - 1]) {
-						if (exptableContsimplexNumericSparseIRCSR[jj + exptableContsimplexNumericSparseJCCSR[ii]] == kk) {
+					if (jj >= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii]] && exptableContsimplexNumericSparseJCCSR[ii + 1] > 0 && jj <= exptableContsimplexNumericSparseIRCSR[exptableContsimplexNumericSparseJCCSR[ii + 1] - 1]) {
+						if (exptableContsimplexNumericSparseIRCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]] == jj) {
 							// row in exponent is empty but not empty in exptable
-							if (exponentContsimplexNumericSparseJC[kk + 1] - exponentContsimplexNumericSparseJC[kk] <= 0) {
-								ismatchvalue = false;
-								ismatchcolumns = false;
+							if (exponentContsimplexNumericSparseJC[jj + 1] - exponentContsimplexNumericSparseJC[jj] <= 0) {
+								ismatch = false;
 								break;
 							}
 							// value is equal
-							if (exponentContsimplexNumericSparseDouble[exponentContsimplexNumericSparseJC[kk]] != exptableContsimplexNumericSparseDoubleCSR[jj + exptableContsimplexNumericSparseJCCSR[ii]]) {
-								ismatchvalue = false;
-								ismatchcolumns = false;
+							if (exponentContsimplexNumericSparseDouble[exponentContsimplexNumericSparseJC[jj]] != exptableContsimplexNumericSparseDoubleCSR[kk + exptableContsimplexNumericSparseJCCSR[ii]]) {
+								ismatch = false;
 								break;
 							}
-							++jj;
+							++kk;
 						}
 					}
 					else {
 						// exponent has value not in table
-						if (exponentContsimplexNumericSparseJC[kk + 1] - exponentContsimplexNumericSparseJC[kk] > 0) {
-							ismatchcolumns = false;
+						if (exponentContsimplexNumericSparseJC[jj + 1] - exponentContsimplexNumericSparseJC[jj] > 0) {
+							ismatch = false;
 							break;
 						}
 					}
-					if (!ismatchvalue) {
-						ismatch = false;
-						break;
-					}
-					if (!ismatchcolumns) {
-						ismatchvalue = false;
-						ismatch = false;
-						break;
-					}
-				}
-				if (!ismatchcolumns) {
-					ismatch = false;
-				}
-				if (!ismatchvalue) {
-					ismatch = false;
 				}
 				if (ismatch) {
 					/*index = index + (ii - 1)*jump(contsimplex);*/
-					index = ((double)ii)*jumpContsimplexNumeric[countsimplex];
+					index = index + ((double)ii)*jumpContsimplexNumeric[countsimplex];
 					break;
 				}
 			}

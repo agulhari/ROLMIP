@@ -376,11 +376,11 @@ end
 
 
 % function index = gethash(exponent,exptable,jump)
-% % 	%idx = zeros(length(exponent), 1);
-% % 	index = 0;
-% % % 	index2 = 0;
-% % 	for contsimplex=1:(length(exponent))
-% % 		if (length(exptable{contsimplex}) > 0)
+% 	%idx = zeros(length(exponent), 1);
+% 	index = 0;
+% % 	index2 = 0;
+% 	for contsimplex=1:(length(exponent))
+% 		if (length(exptable{contsimplex}) > 0)
 % % % 			centers  = 1:size(exptable{contsimplex}, 1);
 % % % 			%d = diff(centers)/2;
 % % % 			%edges = [centers(1)-d(1), centers(1:end-1)+d, centers(end)+d(end)];
@@ -389,21 +389,23 @@ end
 % % % 			%idx(contsimplex, 1) = (find(histcounts(i, edges) == size(exptable{contsimplex},2)) - 1)*jump(contsimplex);
 % % % 			%idx(contsimplex, 1) = (find(ismember(exptable{contsimplex}, exponent{contsimplex}, 'rows')) - 1)*jump(contsimplex);
 % % % 			%index = 0;
-% % 			for ii = 1:size(exptable{contsimplex}, 1)% this should be equivalent to what the histogram code does but is faster
-% % 				if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})
-% % 					index2 = index2 + (ii - 1)*jump(contsimplex);
-% % 					break;
-% % 				end
-% % 			end
-% % 		end
-% % 	end
-% % 	%assert(sum(idx) == index);
-% % 	%%assert(index == index2);
-% % 	%index = sum(idx) + 1;
-% % 	index = index + 1;
-% % % 	index2 = index2 + 1;
+% 			for ii = 1:size(exptable{contsimplex}, 1)% this should be equivalent to what the histogram code does but is faster
+% 				if all(exptable{contsimplex}(ii, :) == exponent{contsimplex})
+% 					index = index + (ii - 1)*jump(contsimplex);
+% 					break;
+% 				end
+% 			end
+% % %				[i,~] = find(exptable{contsimplex} - repmat(exponent{contsimplex},size(exptable{contsimplex},1),1) == 0);
+% % %				index = index + (find(histc(i,1:size(exptable{contsimplex},1)) == size(exptable{contsimplex},2)) - 1)*jump(contsimplex);
+% 		end
+% 	end
+% 	%assert(sum(idx) == index);
+% 	%%assert(index == index2);
+% 	%index = sum(idx) + 1;
+% 	index = index + 1;
+% % 	index2 = index2 + 1;
 % 	idx2 = gethash_mex(exponent, exptable, jump);
-% % % 	assert(index == index2);
-% % 	assert(index == idx2);
+% % 	assert(index == index2);
+% 	assert(index == idx2);
 % 	return;
 % end
