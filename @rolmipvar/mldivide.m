@@ -6,7 +6,7 @@ function Z = mldivide(Y, X)
 
   if(isa(X, 'rolmipvar'))
       if(isa(Y, 'rolmipvar'))
-          error('ROLMIP:mrdivide', 'Division is not defined for variables of type ''rolmipvar''.');
+          error('ROLMIP:mldivide', 'Division is not defined for variables of type ''rolmipvar''.');
       else
           Z = X;
           for i = 1:length(X.data)
