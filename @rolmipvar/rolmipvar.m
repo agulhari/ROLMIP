@@ -80,10 +80,13 @@ elseif (nargin == 2)
 elseif (nargin == 3) 
     M = varargin{1};
     if (isstr(varargin{3}))
-        if (length(M) > 1)
+        if ((length(M) > 1) && (strcmp(varargin{3},'scalar')))
             error('The first input argument should be a scalar');
             poly = [];
             return
+        elseif ((length(M) > 1) && ~(strcmp(varargin{3},'scalar')))
+            error('Invalid third argument');
+            poly = [];
         end
         label = varargin{2};
         vertices = 0;
