@@ -331,8 +331,9 @@ if (op == '*')
                     closepar2 = [];
                     contop2 = 2;
                     finish = false;
-                    while ((contop2 <= length(poly2.opcode{cont2})) && (~finish))
-                        if ((poly2.opcode{cont2}(contop2) == '+') || (poly2.opcode{cont2}(contop2) == '-'))
+					poly2OpcodeCont2 = poly2.opcode{cont2};
+                    while ((contop2 <= length(poly2OpcodeCont2)) && (~finish))
+                        if ((poly2OpcodeCont2(contop2) == '+') || (poly2OpcodeCont2(contop2) == '-'))
                             finish = true;
                             openpar2 = '(';
                             closepar2 = ')';

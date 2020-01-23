@@ -48,18 +48,20 @@ end
 
 var = 0;
 for cont=1:length(poly.data)
+	polyDataCont = poly.data(cont);
     param = 1;
-    for contsimplex=1:length(poly.data(cont).exponent)
+    for contsimplex=1:length(polyDataCont.exponent)
         if iscell(paramval)
-            for contexp=1:length(poly.data(cont).exponent{contsimplex})
-                param = param*paramval{contsimplex}(contexp)^(poly.data(cont).exponent{contsimplex}(contexp));
-            end
+			paramvalContsimplex = paramval{contsimplex};
+			polyDataContExponent = polyDataCont.exponent{contsimplex};
+			newparam = paramvalContsimplex(1:length(polyDataContExponent)).^polyDataContExponent(1:length(polyDataContExponent));% is 120 times faster than for loop
+			param = param*prod(newparam(:));
         else
             alfa = (paramval(contsimplex) - poly.bounds(contsimplex,2))/(poly.bounds(contsimplex,1) - poly.bounds(contsimplex,2));
-            param = param*alfa^(poly.data(cont).exponent{contsimplex}(1))*(1-alfa)^(poly.data(cont).exponent{contsimplex}(2));
+            param = param*alfa^(polyDataCont.exponent{contsimplex}(1))*(1-alfa)^(polyDataCont.exponent{contsimplex}(2));
         end
     end
-    var = var + param*poly.data(cont).value;
+    var = var + param*polyDataCont.value;
 end
 varargout{1} = var;
    
