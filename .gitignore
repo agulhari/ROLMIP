@@ -1,0 +1,8 @@
+*.bak
+/slprj
+/*_grt_rtw
+*.asv
+*.mdl.autosave
+*.slx.autosave
+*.m~
+*.pdb
